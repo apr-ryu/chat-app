@@ -3,13 +3,6 @@
   --foreground: #171717;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 html {
   height: 100%;
 }
@@ -26,7 +19,7 @@ body {
   flex-direction: column;
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  /* font-family: Arial, Helvetica, sans-serif; */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -35,6 +28,8 @@ body {
   box-sizing: border-box;
   padding: 0;
   margin: 0;
+  font-family: var(--font--lexend);
+  /* font-family: Arial, Helvetica, sans-serif; */
 }
 
 a {
@@ -42,8 +37,50 @@ a {
   text-decoration: none;
 }
 
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
+input,
+textarea {
+  outline: none !important;
+  -webkit-appearance: none !important;
+  &:focus,
+  &:focus-visible {
+    outline: none !important;
+    outline-style: none !important;
+    outline-width: 0 !important;
+    -webkit-appearance: none !important;
+    -webkit-border-radius: 0;
+  }
+}
+
+input::-webkit-input-placeholder {
+  color: rgb(182, 182, 182) !important;
+}
+input:-ms-input-placeholder {
+  color: rgb(182, 182, 182) !important;
+}
+
+@media all and (max-width: 768px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+.page {
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  @media all and (max-width: 768px) {
+    height: 75vh;
+  }
+  p.title {
+    font-weight: 800;
+    color: #4a372e;
+    @media all and (max-width: 768px) {
+      display: none;
+    }
   }
 }
