@@ -4,7 +4,7 @@ import "./Messanger.scss";
 import { FiArrowUpCircle } from "react-icons/fi";
 import { useEffect, useRef, useState, useCallback, use } from "react";
 
-export default function Messanger() {
+export default function Messanger({ sender, recipient }) {
   const CryptoJS = require("crypto-js");
   const wsRef = useRef(null);
   const input = useRef("");
@@ -69,7 +69,7 @@ export default function Messanger() {
   };
 
   return (
-    <div className="wrapper">
+    <div id="messenger" className="wrapper">
       <div className="bg-overlay">
         <div></div>
       </div>
