@@ -10,8 +10,12 @@ server.on("connection", (socket) => {
   socket.on("message", (data) => {
     const message = JSON.parse(data);
 
-    if (!clients.find((client) => client.id === message.id)) {
-      clients.push({ id: message.id, socket: socket, key: message.key });
+    if (!clients.find((client) => client.sender === message.sender)) {
+      clients.push({
+        sender: message.sender,
+        socket: socket,
+        key: message.key,
+      });
     }
 
     clients.forEach((client) => {

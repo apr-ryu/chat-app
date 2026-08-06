@@ -51,7 +51,8 @@ export default function Messanger({ sender, recipient }) {
 
     let data = {
       type: "text",
-      id: window.location.origin.includes("host") ? 1 : 2,
+      sender: sender,
+      recipient: recipient,
       text: ciphertext,
     };
 
@@ -76,17 +77,13 @@ export default function Messanger({ sender, recipient }) {
       <div className="top-bar"></div>
       <div className="message-box">
         {message.map((msg, index) =>
-          (msg.id === 1 &&
-            typeof window !== "undefined" &&
-            window.location.hostname === "localhost") ||
-          (msg.id === 2 &&
-            typeof window !== "undefined" &&
-            window.location.hostname !== "localhost") ? (
+          msg.sender === sender && typeof window !== "undefined" ? (
             <div key={index} className="message-bubble sent">
               <p>{msg.text}</p>
             </div>
           ) : (
             <div key={index} className="message-bubble received">
+              <span>{msg.sender}</span>
               <p>{msg.text}</p>
             </div>
           ),
