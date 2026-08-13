@@ -23,6 +23,23 @@ services:
       NODE_ENV: production
     ports:
       - 8080:8080
+      - "3001:3001"
+
+  postgres:
+    image: postgres:17
+
+    ports:
+      - "5432:5432"
+
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: "cy0009"
+      POSTGRES_DB: chat_app
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
 
 # The commented out section below is an example of how to define a PostgreSQL
 # database that your application can use. `depends_on` tells Docker Compose to

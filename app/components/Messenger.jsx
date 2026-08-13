@@ -2,7 +2,8 @@
 
 import "./Messanger.scss";
 import { FiArrowUpCircle } from "react-icons/fi";
-import { useEffect, useRef, useState, useCallback, use } from "react";
+import { useEffect, useRef, useState } from "react";
+import axios from "axios";
 
 export default function Messanger({ sender, recipient }) {
   const CryptoJS = require("crypto-js");
@@ -11,6 +12,19 @@ export default function Messanger({ sender, recipient }) {
   const secretKey = useRef("my-secret-key-is-7777");
   const [message, setMessage] = useState([]);
   const [inputValue, setInputValue] = useState("");
+
+  const decryptMesaage = (message) => {
+    let bytes = CryptoJS.AES.decrypt(message.text, secretKey.current);
+    let decryptedText = bytes.toString(CryptoJS.enc.Utf8);
+    // message.text = decryptedText;
+    let decryptedMessage = {
+      ...message,
+      text: decryptedText,
+    };
+    if (message.type === "newMessage") {
+      setMessage((prev) => [...prev, decryptedMessage]);
+    }
+  };
 
   useEffect(() => {
     const ws = new WebSocket("ws://192.168.1.67:8080");
@@ -23,14 +37,7 @@ export default function Messanger({ sender, recipient }) {
 
     ws.onmessage = (event) => {
       const message = JSON.parse(event.data);
-      let bytes = CryptoJS.AES.decrypt(message.text, secretKey.current);
-      let decryptedText = bytes.toString(CryptoJS.enc.Utf8);
-      message.text = decryptedText;
-
-      let decryptedMessage = { ...message, text: decryptedText };
-      if (message.type === "text") {
-        setMessage((prev) => [...prev, decryptedMessage]);
-      }
+      decryptMesaage(message);
     };
 
     ws.onclose = (e) => {
@@ -38,10 +45,35 @@ export default function Messanger({ sender, recipient }) {
     };
 
     return () => {
-      console.log("클립업함수");
+      console.log("clean up");
       ws.close();
     };
   }, []);
+
+  useEffect(() => {
+    const fetchMessages = async () => {
+      try {
+        const response = await axios.get(
+          `http://localhost:3001/api/messages?sender=${sender}&recipient=${recipient}`,
+        );
+        console.log(response.data);
+        response.data.messages.forEach((message) => {
+          decryptMesaage(message);
+        });
+      } catch (error) {
+        console.error("Failed to fetch messages:", error);
+      }
+    };
+
+    if (sender && recipient) {
+      let data = {
+        type: "userInfo",
+        id: sender,
+      };
+      wsRef?.current?.send(JSON.stringify(data));
+      fetchMessages();
+    }
+  }, [sender, recipient]);
 
   const handleOnClick = (input) => {
     let ciphertext = CryptoJS.AES.encrypt(
@@ -50,7 +82,7 @@ export default function Messanger({ sender, recipient }) {
     ).toString();
 
     let data = {
-      type: "text",
+      type: "newMessage",
       sender: sender,
       recipient: recipient,
       text: ciphertext,
@@ -63,7 +95,8 @@ export default function Messanger({ sender, recipient }) {
   };
 
   const handleKeyDown = (e) => {
-    if (e.key === "Enter" && !e.shiftKey) {
+    console.log("키 다운");
+    if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
       e.preventDefault();
       handleOnClick(input);
     }
