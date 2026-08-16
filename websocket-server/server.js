@@ -1,50 +1,53 @@
 const WebSocket = require("ws");
 const express = require("express");
-// const { Client } = require("pg");
+const { Client } = require("pg");
 const messageStore = require("./messageStore");
 const clientsStore = require("./clientsStore");
 const cors = require("cors");
 
-// const client = new Client({
-//   host: "postgres",
-//   port: 5432,
-//   user: "postgres",
-//   password: "cy0009",
-//   database: "chat_app",
-// });
+const client = new Client({
+  host: "postgres",
+  port: 5432,
+  user: "postgres",
+  password: "cy0009",
+  database: "chat_app",
+});
 
-// client
-//   .connect()
-//   .then(async () => {
-//     console.log("PostgreSQL!! connected!");
-//   })
-//   .catch((err) => {
-//     console.error("PostgreSQL!!connection error:", err);
-//   });
+client
+  .connect()
+  .then(async () => {
+    console.log("PostgreSQL!! connected!");
+  })
+  .catch((err) => {
+    console.error("PostgreSQL!!connection error:", err);
+  });
 
 const app = express();
 app.use(cors());
 
-app.get("/api/messages", (req, res) => {
+app.get("/api/messages", async (req, res) => {
   const { sender, recipient } = req.query;
   console.log("여기도 실행되나..", sender, recipient);
 
-  const messages = messageStore.getMessages();
+  // const messages = messageStore.getMessages();
 
-  const filteredMessages = messages.filter(
-    (message) =>
-      (message.sender === sender && message.recipient === recipient) ||
-      (message.sender === recipient && message.recipient === sender),
+  const result = await client.query(
+    `SELECT *
+       FROM messages
+       WHERE (sender = $1 AND recipient = $2)
+       OR (sender = $2 AND recipient = $1)
+       ORDER BY created_at ASC`,
+    [sender, recipient],
   );
 
   res.json({
     sender,
     recipient,
-    messages: filteredMessages,
+    messages: result.rows,
   });
 });
 
-app.get("/api/messgeHistory", (req, res) => {
+app.get("/api/message-history", (req, res) => {
   const { username } = req.query;
   console.log("herer", username);
 
@@ -103,14 +106,11 @@ server.on("connection", (socket) => {
       }
       //: 이미 로그인 후 새로운 메세지 클라이언트로 부터 받음
     } else if (newMessage.type === "newMessage") {
-      // const result = await client.query(
-      //   `INSERT INTO messages (sender, recipient, content)
-      //  VALUES ($1, $2, $3)
-      //  RETURNING *`,
-      //   [newMessage.sender, newMessage.recipient, newMessage.text],
-      // );
-
-      // console.log(result.rows[0]);
+      const result = await client.query(
+        `INSERT INTO messages (sender, recipient, content)
+       VALUES ($1, $2, $3)`,
+        [newMessage.sender, newMessage.recipient, newMessage.content],
+      );
 
       const newMessageWithTimestamp = {
         ...newMessage,

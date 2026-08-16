@@ -14,16 +14,17 @@ export default function Messanger({ sender, recipient }) {
   const [inputValue, setInputValue] = useState("");
 
   const decryptMesaage = (message) => {
-    let bytes = CryptoJS.AES.decrypt(message.text, secretKey.current);
+    let bytes = CryptoJS.AES.decrypt(message.content, secretKey.current);
     let decryptedText = bytes.toString(CryptoJS.enc.Utf8);
     // message.text = decryptedText;
     let decryptedMessage = {
       ...message,
-      text: decryptedText,
+      content: decryptedText,
     };
-    if (message.type === "newMessage") {
-      setMessage((prev) => [...prev, decryptedMessage]);
-    }
+    console.log("ㅗㄷㄱㄷㄱㄷㄱㄷ", decryptedText);
+    // if (message.type === "newMessage") {
+    setMessage((prev) => [...prev, decryptedMessage]);
+    // }
   };
 
   useEffect(() => {
@@ -75,6 +76,10 @@ export default function Messanger({ sender, recipient }) {
     }
   }, [sender, recipient]);
 
+  useEffect(() => {
+    console.log(message);
+  }, [message]);
+
   const handleOnClick = (input) => {
     let ciphertext = CryptoJS.AES.encrypt(
       input.current.value,
@@ -85,7 +90,7 @@ export default function Messanger({ sender, recipient }) {
       type: "newMessage",
       sender: sender,
       recipient: recipient,
-      text: ciphertext,
+      content: ciphertext,
     };
 
     if (wsRef.current.readyState === WebSocket.OPEN) {
@@ -112,12 +117,12 @@ export default function Messanger({ sender, recipient }) {
         {message.map((msg, index) =>
           msg.sender === sender && typeof window !== "undefined" ? (
             <div key={index} className="message-bubble sent">
-              <p>{msg.text}</p>
+              <p>{msg.content}</p>
             </div>
           ) : (
             <div key={index} className="message-bubble received">
               <span>{msg.sender}</span>
-              <p>{msg.text}</p>
+              <p>{msg.content}</p>
             </div>
           ),
         )}
