@@ -6,7 +6,8 @@ const clientsStore = require("./clientsStore");
 const cors = require("cors");
 
 const client = new Client({
-  host: "postgres",
+  // host: "postgres",
+  host: "localhost",
   port: 5432,
   user: "postgres",
   password: "cy0009",
@@ -27,10 +28,6 @@ app.use(cors());
 
 app.get("/api/messages", async (req, res) => {
   const { sender, recipient } = req.query;
-  console.log("여기도 실행되나..", sender, recipient);
-
-  // const messages = messageStore.getMessages();
-
   const result = await client.query(
     `SELECT *
        FROM messages
@@ -47,18 +44,26 @@ app.get("/api/messages", async (req, res) => {
   });
 });
 
-app.get("/api/message-history", (req, res) => {
+app.get("/api/chat-list", async (req, res) => {
   const { username } = req.query;
-  console.log("herer", username);
-
-  const messages = messageStore.getMessages();
-  const filteredMessages = messages.filter(
-    (message) => message.sender === username || message.recipient === username,
+  const result = await client.query(
+    `SELECT *
+    FROM messages m
+    WHERE (m.sender = $1 OR m.recipient = $1)
+    AND m.created_at = (
+      SELECT MAX(m2.created_at)
+        FROM messages m2
+          WHERE
+            (m2.sender = m.sender AND m2.recipient = m.recipient)
+            OR
+            (m2.sender = m.recipient AND m2.recipient = m.sender)
+      )
+    ORDER BY m.created_at DESC;`,
+    [username],
   );
 
   res.json({
-    username,
-    messages: filteredMessages,
+    messages: result.rows,
   });
 });
 
@@ -114,7 +119,7 @@ server.on("connection", (socket) => {
 
       const newMessageWithTimestamp = {
         ...newMessage,
-        timestamp: new Date().toISOString(),
+        created_at: new Date().toISOString(),
       };
       messageStore.saveMessage(newMessageWithTimestamp);
 
@@ -124,7 +129,7 @@ server.on("connection", (socket) => {
           (client.id === newMessage.sender ||
             client.id === newMessage.recipient)
         ) {
-          client.socket.send(JSON.stringify(newMessage));
+          client.socket.send(JSON.stringify(newMessageWithTimestamp));
         }
       });
     }

@@ -1,11 +1,12 @@
 "use client";
 
-import "./Messanger.scss";
 import { FiArrowUpCircle } from "react-icons/fi";
 import { useEffect, useRef, useState } from "react";
+import { FiArrowLeftCircle } from "react-icons/fi";
 import axios from "axios";
+import "./Messanger.scss";
 
-export default function Messanger({ sender, recipient }) {
+export default function Messanger({ sender, recipient, setRecipient }) {
   const CryptoJS = require("crypto-js");
   const wsRef = useRef(null);
   const input = useRef("");
@@ -21,7 +22,6 @@ export default function Messanger({ sender, recipient }) {
       ...message,
       content: decryptedText,
     };
-    console.log("ㅗㄷㄱㄷㄱㄷㄱㄷ", decryptedText);
     // if (message.type === "newMessage") {
     setMessage((prev) => [...prev, decryptedMessage]);
     // }
@@ -30,10 +30,33 @@ export default function Messanger({ sender, recipient }) {
   useEffect(() => {
     const ws = new WebSocket("ws://192.168.1.67:8080");
     wsRef.current = ws;
+    const fetchMessages = async () => {
+      if (sender && recipient) {
+        try {
+          const response = await axios.get(
+            `http://localhost:3001/api/messages?sender=${sender}&recipient=${recipient}`,
+          );
+          console.log(response.data);
+          response.data.messages.forEach((message) => {
+            decryptMesaage(message);
+          });
+        } catch (error) {
+          console.error("Failed to fetch messages:", error);
+        }
+      }
+    };
 
     //: Generating Public Keys
     ws.onopen = () => {
       console.log("ONOPEN");
+      if (sender && recipient) {
+        let data = {
+          type: "userInfo",
+          id: sender,
+        };
+        wsRef?.current?.send(JSON.stringify(data));
+        fetchMessages();
+      }
     };
 
     ws.onmessage = (event) => {
@@ -52,28 +75,27 @@ export default function Messanger({ sender, recipient }) {
   }, []);
 
   useEffect(() => {
-    const fetchMessages = async () => {
-      try {
-        const response = await axios.get(
-          `http://localhost:3001/api/messages?sender=${sender}&recipient=${recipient}`,
-        );
-        console.log(response.data);
-        response.data.messages.forEach((message) => {
-          decryptMesaage(message);
-        });
-      } catch (error) {
-        console.error("Failed to fetch messages:", error);
-      }
-    };
-
-    if (sender && recipient) {
-      let data = {
-        type: "userInfo",
-        id: sender,
-      };
-      wsRef?.current?.send(JSON.stringify(data));
-      fetchMessages();
-    }
+    // const fetchMessages = async () => {
+    //   try {
+    //     const response = await axios.get(
+    //       `http://localhost:3001/api/messages?sender=${sender}&recipient=${recipient}`,
+    //     );
+    //     console.log(response.data);
+    //     response.data.messages.forEach((message) => {
+    //       decryptMesaage(message);
+    //     });
+    //   } catch (error) {
+    //     console.error("Failed to fetch messages:", error);
+    //   }
+    // };
+    // if (sender && recipient) {
+    //   let data = {
+    //     type: "userInfo",
+    //     id: sender,
+    //   };
+    //   wsRef?.current?.send(JSON.stringify(data));
+    //   fetchMessages();
+    // }
   }, [sender, recipient]);
 
   useEffect(() => {
@@ -107,22 +129,44 @@ export default function Messanger({ sender, recipient }) {
     }
   };
 
+  const formattedTime = (createdat) => {
+    const date = new Date(createdat);
+    return (
+      `${String(date.getHours()).padStart(2, "0")}:` +
+      `${String(date.getMinutes()).padStart(2, "0")}`
+    );
+  };
+
   return (
     <div id="messenger" className="wrapper">
       <div className="bg-overlay">
         <div></div>
+      </div>
+      <div
+        className="back-button"
+        onClick={() => {
+          setRecipient(null);
+        }}
+      >
+        <FiArrowLeftCircle />
       </div>
       <div className="top-bar"></div>
       <div className="message-box">
         {message.map((msg, index) =>
           msg.sender === sender && typeof window !== "undefined" ? (
             <div key={index} className="message-bubble sent">
-              <p>{msg.content}</p>
+              <div className="flex-row">
+                <p>{msg.content}</p>
+                <span>{formattedTime(msg.created_at)}</span>
+              </div>
             </div>
           ) : (
             <div key={index} className="message-bubble received">
               <span>{msg.sender}</span>
-              <p>{msg.content}</p>
+              <div className="flex-row received">
+                <p>{msg.content}</p>
+                <span>{formattedTime(msg.created_at)}</span>
+              </div>
             </div>
           ),
         )}

@@ -4,10 +4,12 @@ import { useEffect, useRef, useState, useCallback, use } from "react";
 
 import Messanger from "./components/Messenger";
 import Login from "./components/Login";
+import ChatList from "./components/ChatList";
 
 export default function Home() {
   const [sender, setSender] = useState(null);
   const [recipient, setRecipient] = useState(null);
+  const [popup, setPopup] = useState("sign-in");
 
   useEffect(() => {
     console.log(sender);
@@ -15,11 +17,30 @@ export default function Home() {
 
   return (
     <div className={`page`}>
-      <p className="title">{"LET'S YAPPP"}</p>
-      {!sender && !recipient && (
-        <Login setSender={setSender} setRecipient={setRecipient} />
+      {sender && <p className="title">{"LET'S YAPPP"}</p>}
+      {popup && (
+        <Login
+          setSender={setSender}
+          setRecipient={setRecipient}
+          setPopup={setPopup}
+          popup={popup}
+        />
       )}
-      <Messanger sender={sender} recipient={recipient} />
+      {sender && !recipient && (
+        <ChatList
+          sender={sender}
+          setSender={setSender}
+          setRecipient={setRecipient}
+          setPopup={setPopup}
+        />
+      )}
+      {sender && recipient !== null && (
+        <Messanger
+          sender={sender}
+          recipient={recipient}
+          setRecipient={setRecipient}
+        />
+      )}
     </div>
   );
 }

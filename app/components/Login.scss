@@ -23,6 +23,9 @@
     max-width: 260px;
     height: 200px;
     padding: 40px;
+    p {
+      font-weight: 600;
+    }
 
     input {
       border: none;
@@ -44,7 +47,7 @@
       border: 1.5px solid #ffffff;
       border-radius: 10px;
       background-color: transparent;
-      margin-top: 10px;
+      // margin-top: 5px;
       cursor: pointer;
       padding: 5px 10px;
       background-color: #ffffff;

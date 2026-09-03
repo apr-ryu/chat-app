@@ -2,6 +2,7 @@
 const nextConfig = {
   /* config options here */
   allowedDevOrigins: ["192.168.1.67"],
+  reactStrictMode: false, // true를 false로 변경
 };
 
 export default nextConfig;

@@ -1,31 +1,39 @@
 "use client";
 
 import "./Login.scss";
-import { useEffect, useRef, useState, useCallback, use } from "react";
+import { useRef } from "react";
 
-export default function Login({ setSender, setRecipient }) {
+export default function Login({ setSender, setRecipient, setPopup, popup }) {
   const senderName = useRef(null);
   const recipientName = useRef(null);
-  const handleOnClick = (sender, recipient) => {
-    if (sender.value && recipient.value) {
-      setSender(sender.value);
-      setRecipient(recipient.value);
+  const handleOnClick = (user) => {
+    if (popup === "sign-in") {
+      setSender(user.value);
+    } else if (popup === "new-chat") {
+      setRecipient(user.value);
     }
+    setPopup(false);
   };
 
   return (
     <div id="login">
       <div className="wrapper">
-        <p>Welcome Back!</p>
-        <input ref={senderName} type="text" placeholder="I am.." />
+        <p>{popup === "sign-in" ? "SIGN IN" : "NEW CHAT"}</p>
         <input
+          ref={popup === "sign-in" ? senderName : recipientName}
+          type="text"
+          placeholder="USERNAME"
+        />
+        {/* <input
           ref={recipientName}
           type="text"
           placeholder="I'd like to talk to.."
-        />
+        /> */}
         <button
           onClick={() => {
-            handleOnClick(senderName.current, recipientName.current);
+            handleOnClick(
+              popup === "sign-in" ? senderName.current : recipientName.current,
+            );
           }}
         >
           SUBMIT
