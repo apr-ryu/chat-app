@@ -3,6 +3,7 @@ const express = require("express");
 const { Client } = require("pg");
 const messageStore = require("./messageStore");
 const clientsStore = require("./clientsStore");
+const bcrypt = require("bcrypt");
 const cors = require("cors");
 
 const client = new Client({
@@ -25,12 +26,18 @@ client
 
 const app = express();
 app.use(cors());
+app.use(express.json());
 
 app.get("/api/messages", async (req, res) => {
   const { sender, recipient } = req.query;
   const result = await client.query(
-    `SELECT *
-       FROM messages
+    `SELECT
+      id,
+      sender,
+      recipient,
+      content,
+      created_at AT TIME ZONE 'UTC' AS created_at
+    FROM messages
        WHERE (sender = $1 AND recipient = $2)
        OR (sender = $2 AND recipient = $1)
        ORDER BY created_at ASC`,
@@ -47,7 +54,12 @@ app.get("/api/messages", async (req, res) => {
 app.get("/api/chat-list", async (req, res) => {
   const { username } = req.query;
   const result = await client.query(
-    `SELECT *
+    `SELECT 
+       m.id,
+       m.sender,
+       m.recipient,
+       m.content,
+       m.created_at AT TIME ZONE 'UTC' AS created_at
     FROM messages m
     WHERE (m.sender = $1 OR m.recipient = $1)
     AND m.created_at = (
@@ -65,6 +77,52 @@ app.get("/api/chat-list", async (req, res) => {
   res.json({
     messages: result.rows,
   });
+});
+
+app.post("/api/signup", async (req, res) => {
+  const { username, password } = req.body;
+  const passwordHash = await bcrypt.hash(password, 10);
+  const result = await client.query(`SELECT * FROM users WHERE username = $1`, [
+    username,
+  ]);
+
+  if (result.rows.length === 0) {
+    await client.query(
+      `INSERT INTO users (username, "passwordHash")
+     VALUES ($1, $2)`,
+      [username, passwordHash],
+    );
+    return res.status(201).json({
+      message: "Signup successful",
+    });
+  } else {
+    return res.status(409).json({
+      message: "User already exists",
+    });
+  }
+});
+
+app.post("/api/login", async (req, res) => {
+  const { username, password } = req.body;
+  const result = await client.query(`SELECT * FROM users WHERE username = $1`, [
+    username,
+  ]);
+
+  if (result.rows.length === 0) {
+    return res.status(401).json({
+      message: "Invalid user",
+    });
+  }
+  const isValid = await bcrypt.compare(password, result.rows[0].passwordHash);
+  if (isValid) {
+    return res.status(200).json({
+      message: "Login successful",
+    });
+  } else {
+    return res.status(401).json({
+      message: "Invalid password",
+    });
+  }
 });
 
 app.listen(3001);

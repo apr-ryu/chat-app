@@ -2,42 +2,109 @@
 
 import "./Login.scss";
 import { useRef } from "react";
+import axios from "axios";
 
 export default function Login({ setSender, setRecipient, setPopup, popup }) {
   const senderName = useRef(null);
   const recipientName = useRef(null);
-  const handleOnClick = (user) => {
-    if (popup === "sign-in") {
-      setSender(user.value);
-    } else if (popup === "new-chat") {
+  const password = useRef(null);
+
+  const handleOnClick = (user, password) => {
+    if (popup === "sign-in" && user.value && password.value) {
+      login(user.value, password.value);
+    } else if (popup === "sign-up" && user.value && password.value) {
+      signup(user.value, password.value);
+    } else if (popup === "new-chat" && user.value) {
       setRecipient(user.value);
+    } else if (!user.value || !password.value) {
+      alert("Please fill in all required fields.");
+      return;
     }
     setPopup(false);
+  };
+
+  const login = async (username, password) => {
+    try {
+      const response = await axios.post(`http://localhost:3001/api/login`, {
+        username: username,
+        password: password,
+      });
+      console.log(response);
+      if (response.status === 200) {
+        setSender(username);
+      }
+    } catch (error) {
+      console.error("Failed to fetch messages:", error);
+      alert(error.response.data.message);
+      location.reload();
+    }
+  };
+
+  const signup = async (username, password) => {
+    try {
+      const response = await axios.post(`http://localhost:3001/api/signup`, {
+        username: username,
+        password: password,
+      });
+      if (response.status === 201) {
+        alert(`Welcome!`);
+        setSender(username);
+      }
+    } catch (error) {
+      console.error("Failed to fetch messages:", error);
+      alert(error.response.data.message);
+      location.reload();
+    }
   };
 
   return (
     <div id="login">
       <div className="wrapper">
-        <p>{popup === "sign-in" ? "SIGN IN" : "NEW CHAT"}</p>
-        <input
-          ref={popup === "sign-in" ? senderName : recipientName}
-          type="text"
-          placeholder="USERNAME"
-        />
-        {/* <input
-          ref={recipientName}
-          type="text"
-          placeholder="I'd like to talk to.."
-        /> */}
-        <button
-          onClick={() => {
-            handleOnClick(
-              popup === "sign-in" ? senderName.current : recipientName.current,
-            );
-          }}
-        >
-          SUBMIT
-        </button>
+        {popup === "start" && (
+          <>
+            <p>WELCOME !</p>
+            <button
+              onClick={() => {
+                setPopup("sign-up");
+              }}
+            >
+              Create new Account
+            </button>
+            <button
+              onClick={() => {
+                setPopup("sign-in");
+              }}
+            >
+              Sign in
+            </button>
+          </>
+        )}
+        {(popup === "sign-up" || popup === "sign-in") && (
+          <>
+            <input ref={senderName} type="text" placeholder="USERNAME" />
+            <input ref={password} type="password" placeholder="PASSWORD" />
+            <button
+              onClick={() => {
+                handleOnClick(senderName.current, password.current);
+              }}
+            >
+              {popup === "sign-up" ? "CREATE NEW ACCOUNT" : "SIGN IN"}
+            </button>
+          </>
+        )}
+        {popup === "new-chat" && (
+          <>
+            <p>{"I'd like to talk to.."}</p>
+            <input ref={recipientName} type="text" placeholder="USERNAME" />
+            <button
+              onClick={() => {
+                handleOnClick(recipientName.current);
+              }}
+            >
+              START A NEW CHAT
+            </button>
+          </>
+        )}
       </div>
     </div>
   );

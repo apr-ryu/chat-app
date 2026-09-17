@@ -9,7 +9,7 @@ import ChatList from "./components/ChatList";
 export default function Home() {
   const [sender, setSender] = useState(null);
   const [recipient, setRecipient] = useState(null);
-  const [popup, setPopup] = useState("sign-in");
+  const [popup, setPopup] = useState("start");
 
   useEffect(() => {
     console.log(sender);

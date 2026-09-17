@@ -24,7 +24,8 @@
     height: 200px;
     padding: 40px;
     p {
-      font-weight: 600;
+      font-weight: 400;
+      margin-bottom: 15px;
     }
 
     input {
@@ -47,11 +48,12 @@
       border: 1.5px solid #ffffff;
       border-radius: 10px;
       background-color: transparent;
-      // margin-top: 5px;
+      margin-top: 5px;
       cursor: pointer;
       padding: 5px 10px;
       background-color: #ffffff;
       width: 100%;
+      font-weight: 400;
     }
   }
 }
