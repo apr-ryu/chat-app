@@ -6,42 +6,35 @@ import { FiArrowUpCircle } from "react-icons/fi";
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { FiPlusCircle } from "react-icons/fi";
+import type { ChatListProps, MessageState, MessageApiResponse } from "../types";
 
 export default function ChatList({
   sender,
-  recipient,
   setSender,
   setRecipient,
   setPopup,
-}) {
+}: ChatListProps) {
   const CryptoJS = require("crypto-js");
-  const input = useRef("");
-  const secretKey = useRef("my-secret-key-is-7777");
-  const [message, setMessage] = useState([]);
-  const [inputValue, setInputValue] = useState("");
+  const secretKey = useRef<HTMLInputElement | string>("my-secret-key-is-7777");
+  const [message, setMessage] = useState<MessageState[]>([]);
 
-  const decryptMesaage = (message) => {
+  const decryptMesaage = (message: MessageState) => {
     let bytes = CryptoJS.AES.decrypt(message.content, secretKey.current);
     let decryptedText = bytes.toString(CryptoJS.enc.Utf8);
-    // message.text = decryptedText;
     let decryptedMessage = {
       ...message,
       content: decryptedText,
     };
-    // console.log("디코딩 된 메세지:", decryptedMessage);
-    // if (message.type === "newMessage") {
     setMessage((prev) => [...prev, decryptedMessage]);
-    // }
   };
 
   useEffect(() => {
     console.log("응?");
     const fetchMessages = async () => {
       try {
-        const response = await axios.get(
+        const response = await axios.get<MessageApiResponse>(
           `http://localhost:3001/api/chat-list?username=${sender}`,
         );
-        // console.log(response.data);
         response.data.messages.forEach((message) => {
           decryptMesaage(message);
         });
@@ -51,20 +44,11 @@ export default function ChatList({
     };
 
     if (sender) {
-      //   let data = {
-      //     type: "userInfo",
-      //     id: sender,
-      //   };
-      //     wsRef?.current?.send(JSON.stringify(data));
       fetchMessages();
     }
   }, [sender]);
 
-  useEffect(() => {
-    console.log(message);
-  }, [message]);
-
-  const formattedTime = (createdat) => {
+  const formattedTime = (createdat: string) => {
     const date = new Date(createdat);
     return (
       `${date.getMonth() + 1}/${date.getDate()} ` +
@@ -73,7 +57,7 @@ export default function ChatList({
     );
   };
 
-  const handleOnClick = (opponent) => {
+  const handleOnClick = (opponent: string) => {
     setSender(sender);
     setRecipient(opponent);
   };

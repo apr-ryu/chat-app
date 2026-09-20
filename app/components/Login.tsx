@@ -1,29 +1,39 @@
 "use client";
 
-import "./Login.scss";
 import { useRef } from "react";
 import axios from "axios";
+import "./Login.scss";
+import type { LoginProps } from "../types";
 
-export default function Login({ setSender, setRecipient, setPopup, popup }) {
-  const senderName = useRef(null);
-  const recipientName = useRef(null);
-  const password = useRef(null);
+export default function Login({
+  setSender,
+  setRecipient,
+  setPopup,
+  popup,
+}: LoginProps) {
+  const senderName = useRef<HTMLInputElement | null>(null);
+  const recipientName = useRef<HTMLInputElement | null>(null);
+  const password = useRef<HTMLInputElement | null>(null);
 
-  const handleOnClick = (user, password) => {
-    if (popup === "sign-in" && user.value && password.value) {
+  const handleOnClick = (
+    user: HTMLInputElement | null,
+    password?: HTMLInputElement | null,
+  ): void => {
+    if (!user) return;
+    if (popup === "sign-in" && user.value && password?.value) {
       login(user.value, password.value);
-    } else if (popup === "sign-up" && user.value && password.value) {
+    } else if (popup === "sign-up" && user.value && password?.value) {
       signup(user.value, password.value);
     } else if (popup === "new-chat" && user.value) {
       setRecipient(user.value);
-    } else if (!user.value || !password.value) {
+    } else if (!user.value || !password?.value) {
       alert("Please fill in all required fields.");
       return;
     }
     setPopup(false);
   };
 
-  const login = async (username, password) => {
+  const login = async (username: string, password: string): Promise<void> => {
     try {
       const response = await axios.post(`http://localhost:3001/api/login`, {
         username: username,
@@ -33,14 +43,16 @@ export default function Login({ setSender, setRecipient, setPopup, popup }) {
       if (response.status === 200) {
         setSender(username);
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Failed to fetch messages:", error);
-      alert(error.response.data.message);
+      if (axios.isAxiosError(error)) {
+        alert(error.response?.data?.message);
+      }
       location.reload();
     }
   };
 
-  const signup = async (username, password) => {
+  const signup = async (username: string, password: string): Promise<void> => {
     try {
       const response = await axios.post(`http://localhost:3001/api/signup`, {
         username: username,
@@ -50,9 +62,11 @@ export default function Login({ setSender, setRecipient, setPopup, popup }) {
         alert(`Welcome!`);
         setSender(username);
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Failed to fetch messages:", error);
-      alert(error.response.data.message);
+      if (axios.isAxiosError(error)) {
+        alert(error.response?.data?.message);
+      }
       location.reload();
     }
   };

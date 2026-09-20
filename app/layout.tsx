@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { Lexend, Inter } from "next/font/google";
 import "./globals.css";
 
@@ -8,13 +9,12 @@ export const metadata = {
 
 const sans = Inter({
   weight: ["300", "400", "800"],
-  width: ["100%"],
   subsets: ["latin"],
   display: "swap",
   variable: "--font--lexend",
 });
 
-export default function RootLayout({ children }) {
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" className={` ${sans.className}`}>
       <body>{children}</body>

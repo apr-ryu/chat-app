@@ -3,28 +3,35 @@
 import { FiArrowUpCircle } from "react-icons/fi";
 import { useEffect, useRef, useState } from "react";
 import { FiArrowLeftCircle } from "react-icons/fi";
+import { RefObject, KeyboardEvent } from "react";
+import type {
+  MessangerProps,
+  MessageState,
+  MessageApiResponse,
+} from "../types";
 import axios from "axios";
 import "./Messanger.scss";
 
-export default function Messanger({ sender, recipient, setRecipient }) {
+export default function Messanger({
+  sender,
+  recipient,
+  setRecipient,
+}: MessangerProps) {
   const CryptoJS = require("crypto-js");
-  const wsRef = useRef(null);
-  const input = useRef("");
-  const secretKey = useRef("my-secret-key-is-7777");
-  const [message, setMessage] = useState([]);
-  const [inputValue, setInputValue] = useState("");
+  const wsRef = useRef<WebSocket | null>(null);
+  const input = useRef<HTMLInputElement | null>(null);
+  const secretKey = useRef<string>("my-secret-key-is-7777");
+  const [message, setMessage] = useState<MessageState[]>([]);
+  const [inputValue, setInputValue] = useState<string>("");
 
-  const decryptMesaage = (message) => {
+  const decryptMesaage = (message: MessageState) => {
     let bytes = CryptoJS.AES.decrypt(message.content, secretKey.current);
     let decryptedText = bytes.toString(CryptoJS.enc.Utf8);
-    // message.text = decryptedText;
     let decryptedMessage = {
       ...message,
       content: decryptedText,
     };
-    // if (message.type === "newMessage") {
     setMessage((prev) => [...prev, decryptedMessage]);
-    // }
   };
 
   useEffect(() => {
@@ -33,7 +40,7 @@ export default function Messanger({ sender, recipient, setRecipient }) {
     const fetchMessages = async () => {
       if (sender && recipient) {
         try {
-          const response = await axios.get(
+          const response = await axios.get<MessageApiResponse>(
             `http://localhost:3001/api/messages?sender=${sender}&recipient=${recipient}`,
           );
           console.log(response.data);
@@ -74,35 +81,8 @@ export default function Messanger({ sender, recipient, setRecipient }) {
     };
   }, []);
 
-  useEffect(() => {
-    // const fetchMessages = async () => {
-    //   try {
-    //     const response = await axios.get(
-    //       `http://localhost:3001/api/messages?sender=${sender}&recipient=${recipient}`,
-    //     );
-    //     console.log(response.data);
-    //     response.data.messages.forEach((message) => {
-    //       decryptMesaage(message);
-    //     });
-    //   } catch (error) {
-    //     console.error("Failed to fetch messages:", error);
-    //   }
-    // };
-    // if (sender && recipient) {
-    //   let data = {
-    //     type: "userInfo",
-    //     id: sender,
-    //   };
-    //   wsRef?.current?.send(JSON.stringify(data));
-    //   fetchMessages();
-    // }
-  }, [sender, recipient]);
-
-  useEffect(() => {
-    console.log(message);
-  }, [message]);
-
-  const handleOnClick = (input) => {
+  const handleOnClick = (input: RefObject<HTMLInputElement | null>) => {
+    if (!input.current) return;
     let ciphertext = CryptoJS.AES.encrypt(
       input.current.value,
       secretKey.current,
@@ -114,22 +94,21 @@ export default function Messanger({ sender, recipient, setRecipient }) {
       recipient: recipient,
       content: ciphertext,
     };
-
+    if (!wsRef.current) return;
     if (wsRef.current.readyState === WebSocket.OPEN) {
       wsRef?.current?.send(JSON.stringify(data));
     }
     setInputValue("");
   };
 
-  const handleKeyDown = (e) => {
-    console.log("키 다운");
+  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
       e.preventDefault();
       handleOnClick(input);
     }
   };
 
-  const formattedTime = (createdat) => {
+  const formattedTime = (createdat: string) => {
     const date = new Date(createdat);
     return (
       `${String(date.getHours()).padStart(2, "0")}:` +

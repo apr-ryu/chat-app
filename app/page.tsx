@@ -1,19 +1,15 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback, use } from "react";
-
+import { useState } from "react";
 import Messanger from "./components/Messenger";
 import Login from "./components/Login";
 import ChatList from "./components/ChatList";
+import { PopupState, UserState } from "./types";
 
 export default function Home() {
-  const [sender, setSender] = useState(null);
-  const [recipient, setRecipient] = useState(null);
-  const [popup, setPopup] = useState("start");
-
-  useEffect(() => {
-    console.log(sender);
-  }, [sender, recipient]);
+  const [sender, setSender] = useState<UserState>(null);
+  const [recipient, setRecipient] = useState<UserState>(null);
+  const [popup, setPopup] = useState<PopupState>("start");
 
   return (
     <div className={`page`}>
