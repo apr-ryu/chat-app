@@ -1,4 +1,4 @@
-export async function generateKeys() {
+export async function generateKeys(): Promise<CryptoKeyPair> {
   console.log("isSecureContext:", window.isSecureContext);
   console.log("crypto:", window.crypto);
   console.log("subtle:", window.crypto?.subtle);

@@ -27,7 +27,8 @@
     "**/*.ts",
     "**/*.tsx",
     "app/components/ChatList.jsx",
-    "crypto/keys.js"
+    "crypto/keys.ts",
+    "websocket-server/clientsStore.js"
   ],
   "exclude": ["node_modules"]
 }
