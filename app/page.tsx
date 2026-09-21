@@ -13,7 +13,6 @@ export default function Home() {
 
   return (
     <div className={`page`}>
-      {sender && <p className="title">{"LET'S YAPPP"}</p>}
       {popup && (
         <Login
           setSender={setSender}

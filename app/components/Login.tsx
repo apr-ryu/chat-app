@@ -79,17 +79,17 @@ export default function Login({
             <p>WELCOME !</p>
             <button
               onClick={() => {
-                setPopup("sign-up");
-              }}
-            >
-              Create new Account
-            </button>
-            <button
-              onClick={() => {
                 setPopup("sign-in");
               }}
             >
-              Sign in
+              sign in
+            </button>
+            <button
+              onClick={() => {
+                setPopup("sign-up");
+              }}
+            >
+              create new account
             </button>
           </>
         )}
