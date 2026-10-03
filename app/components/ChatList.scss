@@ -7,6 +7,7 @@
     }
   }
   .list-wrapper {
+    padding: 25px 10px;
     margin-top: 50px;
     z-index: 11111;
     display: flex;
@@ -23,7 +24,7 @@
         margin-bottom: 10px;
       }
       span {
-        font-size: 12px;
+        font-size: 14px;
       }
       div:last-child {
         font-size: 20px;
@@ -33,7 +34,7 @@
       }
       .title {
         font-weight: 600;
-        font-size: 17px;
+        font-size: 24px;
       }
     }
     * {
@@ -48,14 +49,35 @@
       cursor: pointer;
       .name {
         font-weight: 600;
-        font-size: 14px;
+        font-size: 20px;
       }
       .message {
-        font-size: 14px;
+        font-size: 18px;
         height: 17px;
-        width: 225px;
+        width: 220px;
         overflow: hidden;
       }
+    }
+  }
+  .gemini {
+    position: absolute;
+    bottom: 40px;
+    right: 25px;
+    border: 1px solid #fff;
+    border-radius: 20px;
+    font-size: 14px;
+    padding: 5px 10px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    -webkit-transition: all ease 0.5s;
+    -moz-transition: all ease 0.5s;
+    transition: all ease 0.5s;
+    &:hover {
+      background-color: #dedede5a;
+    }
+    svg {
+      margin-left: 5px;
     }
   }
 }

@@ -1,6 +1,6 @@
 #messenger {
   border-radius: 55px;
-  padding: 25px;
+  padding: 0 15px 0px;
   height: 72vh;
   width: 350px;
   margin-top: 40px;
@@ -50,18 +50,21 @@
   }
 
   div.message-box {
-    padding-top: 50px;
+    padding: 0px 10px 0;
+    margin-top: 60px;
+    overflow-y: auto;
+    .message-bubble:last-child {
+      margin-bottom: 70px;
+    }
     .message-bubble {
       display: flex;
       flex-direction: column;
       align-items: flex-start;
+
       span {
         display: block;
-        font-size: 12px;
+        font-size: 18px;
         z-index: 1;
-        // display: flex;
-        // align-items: center; /* 세로 가운데 정렬 */
-        // justify-content: center; /* 가로 가운데 정렬 (필요시) */
       }
       .flex-row {
         display: flex;
@@ -74,7 +77,7 @@
         span {
           margin: 7px;
           padding-top: 2px;
-          font-size: 10px;
+          font-size: 14px;
           height: 20px;
           line-height: 20px;
         }
@@ -84,11 +87,10 @@
         border-radius: 10px;
         padding: 7px 11px;
         color: rgb(255, 255, 255);
-        font-size: 14px;
+        font-size: 17px;
         box-shadow: 0px 0px 2px 0px rgba(80, 70, 60, 0.15);
         font-weight: 500;
         position: relative;
-        // overflow: hidden;
         margin: 5px 0;
         max-width: 213px;
         font-weight: 400;
@@ -120,12 +122,17 @@
     padding: 7px;
     background-color: #ffffff78;
     z-index: 100;
+    position: absolute;
+    left: 25px;
+    width: calc(100% - 50px);
+    bottom: 20px;
 
     input {
       border: none;
       background-color: transparent;
       padding: 0 5px;
       width: 100%;
+      font-size: 18px;
     }
     button {
       border: none;
@@ -148,6 +155,7 @@
     width: 120px;
     left: calc(50% - 60px);
     height: 20px;
+    z-index: 1111111;
   }
   .bottom-bar {
     background-color: #ffffff;
