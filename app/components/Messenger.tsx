@@ -8,6 +8,7 @@ import type {
   MessangerProps,
   MessageState,
   MessageApiResponse,
+  GeminiChatLog,
 } from "../types";
 import axios from "axios";
 import "./Messanger.scss";
@@ -20,9 +21,11 @@ export default function Messanger({
   const CryptoJS = require("crypto-js");
   const wsRef = useRef<WebSocket | null>(null);
   const input = useRef<HTMLInputElement | null>(null);
+  const messageBoxRef = useRef<HTMLInputElement | null>(null);
   const secretKey = useRef<string>("my-secret-key-is-7777");
   const [message, setMessage] = useState<MessageState[]>([]);
   const [inputValue, setInputValue] = useState<string>("");
+  const [geminiChatLog, setGeminiChatLog] = useState<GeminiChatLog[]>([]);
 
   const decryptMesaage = (message: MessageState) => {
     let bytes = CryptoJS.AES.decrypt(message.content, secretKey.current);
@@ -32,6 +35,13 @@ export default function Messanger({
       content: decryptedText,
     };
     setMessage((prev) => [...prev, decryptedMessage]);
+    if (recipient === "Gemini") {
+      const contents: GeminiChatLog = {
+        role: message.sender === "Gemini" ? "model" : "user",
+        text: decryptedText,
+      };
+      setGeminiChatLog((prev) => [...prev, contents]);
+    }
   };
 
   useEffect(() => {
@@ -81,7 +91,42 @@ export default function Messanger({
     };
   }, []);
 
-  const handleOnClick = (input: RefObject<HTMLInputElement | null>) => {
+  const askGemini = async (newMessage: string) => {
+    if (newMessage) {
+      try {
+        const response = await axios.post(`http://localhost:3001/api/ai/chat`, {
+          contents: [...geminiChatLog, { role: "user", text: newMessage }],
+        });
+        console.log(response);
+        let ciphertext = CryptoJS.AES.encrypt(
+          response.data.response,
+          secretKey.current,
+        ).toString();
+
+        let data = {
+          type: "newMessage",
+          sender: "Gemini",
+          recipient: sender,
+          content: ciphertext,
+        };
+        if (!wsRef.current) return;
+        if (wsRef.current.readyState === WebSocket.OPEN) {
+          wsRef?.current?.send(JSON.stringify(data));
+        }
+      } catch (error) {
+        console.error("Failed to fetch messages:", error);
+      }
+    }
+  };
+
+  const handleOnClick = (
+    input: RefObject<HTMLInputElement | null>,
+    gemini: boolean,
+  ) => {
+    if (gemini) {
+      if (!input.current) return;
+      askGemini(input.current.value);
+    }
     if (!input.current) return;
     let ciphertext = CryptoJS.AES.encrypt(
       input.current.value,
@@ -104,7 +149,9 @@ export default function Messanger({
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
       e.preventDefault();
-      handleOnClick(input);
+      recipient === "Gemini"
+        ? handleOnClick(input, true)
+        : handleOnClick(input, false);
     }
   };
 
@@ -115,6 +162,17 @@ export default function Messanger({
       `${String(date.getMinutes()).padStart(2, "0")}`
     );
   };
+
+  useEffect(() => {
+    const box = messageBoxRef.current;
+
+    if (box) {
+      box.scrollTo({
+        top: box.scrollHeight,
+        behavior: "smooth",
+      });
+    }
+  }, [message]);
 
   return (
     <div id="messenger" className="wrapper">
@@ -130,7 +188,7 @@ export default function Messanger({
         <FiArrowLeftCircle />
       </div>
       <div className="top-bar"></div>
-      <div className="message-box">
+      <div className="message-box" ref={messageBoxRef}>
         {message.map((msg, index) =>
           msg.sender === sender && typeof window !== "undefined" ? (
             <div key={index} className="message-bubble sent">
@@ -161,7 +219,9 @@ export default function Messanger({
         />
         <button
           onClick={() => {
-            handleOnClick(input);
+            recipient === "Gemini"
+              ? handleOnClick(input, true)
+              : handleOnClick(input, false);
           }}
         >
           <FiArrowUpCircle color="#fff" />

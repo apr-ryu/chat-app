@@ -82,14 +82,14 @@ export default function Login({
                 setPopup("sign-in");
               }}
             >
-              sign in
+              SIGN IN
             </button>
             <button
               onClick={() => {
                 setPopup("sign-up");
               }}
             >
-              create new account
+              CREATE NEW ACCOUNT
             </button>
           </>
         )}

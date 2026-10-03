@@ -3,6 +3,7 @@ import express from "express";
 import { Client } from "pg";
 import * as messageStore from "./messageStore";
 import * as clientsStore from "./clientsStore";
+import { askGemini } from "./gemini";
 import bcrypt from "bcrypt";
 import cors from "cors";
 
@@ -27,6 +28,30 @@ client
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+app.post("/api/ai/chat", async (req, res) => {
+  try {
+    const { contents } = req.body;
+
+    if (!contents) {
+      return res.status(400).json({
+        error: "Message is required",
+      });
+    }
+
+    const response = await askGemini(contents);
+
+    res.json({
+      response,
+    });
+  } catch (error) {
+    console.error("Gemini API error:", error);
+
+    res.status(500).json({
+      error: "Failed to get response from Gemini",
+    });
+  }
+});
 
 app.get("/api/messages", async (req, res) => {
   const { sender, recipient } = req.query;

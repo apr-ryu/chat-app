@@ -6,6 +6,8 @@ import { FiArrowUpCircle } from "react-icons/fi";
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { FiPlusCircle } from "react-icons/fi";
+import { RiGeminiFill } from "react-icons/ri";
+
 import type { ChatListProps, MessageState, MessageApiResponse } from "../types";
 
 export default function ChatList({
@@ -17,6 +19,10 @@ export default function ChatList({
   const CryptoJS = require("crypto-js");
   const secretKey = useRef<HTMLInputElement | string>("my-secret-key-is-7777");
   const [message, setMessage] = useState<MessageState[]>([]);
+
+  const askGemini = async () => {
+    setRecipient("Gemini");
+  };
 
   const decryptMesaage = (message: MessageState) => {
     let bytes = CryptoJS.AES.decrypt(message.content, secretKey.current);
@@ -101,6 +107,15 @@ export default function ChatList({
               </div>
             </div>
           ))}
+        <div
+          className="gemini"
+          onClick={() => {
+            askGemini();
+          }}
+        >
+          Ask Gemini
+          <RiGeminiFill />
+        </div>
       </div>
       <div className="bottom-bar"></div>
     </div>

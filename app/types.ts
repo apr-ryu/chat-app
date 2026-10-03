@@ -30,6 +30,11 @@ export type MessageState = {
   content: string;
 };
 
+export type GeminiChatLog = {
+  role: "user" | "model";
+  text: string;
+};
+
 export type MessageApiResponse = {
   messages: MessageState[];
 };
