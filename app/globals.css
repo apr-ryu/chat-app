@@ -710,3 +710,14 @@ input:-ms-input-placeholder {
     transform: scale(1.3);
   }
 }
+
+/* cat cursor */
+.cat-cursor {
+  position: fixed;
+  width: 45px;
+  height: 45px;
+  pointer-events: none;
+  transform: translate(12px, 12px);
+  image-rendering: pixelated;
+  z-index: 999999999999999;
+}

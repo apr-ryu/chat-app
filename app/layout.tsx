@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { Lexend, Inter, Jersey_15 } from "next/font/google";
-
+import CatCursor from "./components/CatCursor";
 import "./globals.css";
 
 export const metadata = {
@@ -19,6 +19,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" className={` ${sans.className}`}>
       <body>
+        <CatCursor />
         <div className="animated-gradient">
           {/* <div className="gradient-blob gradient-blue" /> */}
           <div className="gradient-blob gradient-pink" />
